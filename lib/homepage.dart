@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,6 +23,10 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    firestore.collection('myCollection').add({
+      'name': 'Example',
+    });
   }
 
   @override
@@ -45,7 +50,7 @@ class _HomePageState extends State<HomePage> {
       case 1:
         return const CryptoList();
       case 2:
-        return Container();
+        return const HistoricalDataScreen();
       default:
         return Container();
     }
@@ -112,10 +117,10 @@ class _HomePageState extends State<HomePage> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
-            children: [
+            children: const [
               Text(
                 'Aladdin',
                 style: TextStyle(

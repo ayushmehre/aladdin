@@ -12,11 +12,11 @@ class _OverViewState extends State<OverView> {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16.0),
-      child: const Column(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
-        children: [
+        children: const [
           Text('Markets Overview',
               style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
         ],
