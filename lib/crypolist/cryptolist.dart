@@ -4,6 +4,8 @@ import 'package:investing_tool/api.dart';
 import 'package:investing_tool/crypolist/model.dart';
 import 'package:investing_tool/firebase.dart';
 
+import '../time_series_model.dart';
+import '../util.dart';
 import 'crypto_list_item.dart';
 import 'last30DaysPerformance.dart';
 
@@ -26,7 +28,47 @@ class _CryptoListState extends State<CryptoList> {
       setState(() {
         cryptoList = value;
       });
+      // feed();
     });
+  }
+
+  void feed() async {
+    await feed1dayChange();
+    await feed1WeekChange();
+    await feed1MonthChange();
+  }
+
+  feed1dayChange() async {
+    for (CryptoPair cryptoPair in cryptoList) {
+      StockData? data = await API().fetchTimeSeriesFor(
+          symbol: cryptoPair.symbol ?? "", interval: '1day', outputSize: 365);
+      if (data != null) {
+        List<PerformanceObject> array = Utils().getPercentageChanges(data);
+        FirebaseUtil().updateDailyPerformance(cryptoPair, array);
+      }
+    }
+  }
+
+  feed1WeekChange() async {
+    for (CryptoPair cryptoPair in cryptoList) {
+      StockData? data = await API().fetchTimeSeriesFor(
+          symbol: cryptoPair.symbol ?? "", interval: '1week', outputSize: 520);
+      if (data != null) {
+        List<PerformanceObject> array = Utils().getPercentageChanges(data);
+        FirebaseUtil().updateWeeklyPerformance(cryptoPair, array);
+      }
+    }
+  }
+
+  feed1MonthChange() async {
+    for (CryptoPair cryptoPair in cryptoList) {
+      StockData? data = await API().fetchTimeSeriesFor(
+          symbol: cryptoPair.symbol ?? "", interval: '1month', outputSize: 120);
+      if (data != null) {
+        List<PerformanceObject> array = Utils().getPercentageChanges(data);
+        FirebaseUtil().updateMonthlyPerformance(cryptoPair, array);
+      }
+    }
   }
 
   void fetchCryptoList() async {
@@ -50,8 +92,7 @@ class _CryptoListState extends State<CryptoList> {
                 Text(
                   query.isEmpty
                       ? 'All Cryptos (${cryptoList.length} Coins)'
-                      : 'Search results for "$query" (${cryptoListFiltered
-                      .length} Coins)',
+                      : 'Search results for "$query" (${cryptoListFiltered.length} Coins)',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -69,10 +110,10 @@ class _CryptoListState extends State<CryptoList> {
                             query = value;
                             cryptoListFiltered = cryptoList
                                 .where((element) =>
-                            element.symbol
-                                ?.toLowerCase()
-                                .contains(value.toLowerCase()) ??
-                                false)
+                                    element.symbol
+                                        ?.toLowerCase()
+                                        .contains(value.toLowerCase()) ??
+                                    false)
                                 .toList();
                           });
                         },
@@ -105,9 +146,8 @@ class _CryptoListState extends State<CryptoList> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          for (var cryptoPair in query.isEmpty
-              ? cryptoList
-              : cryptoListFiltered)
+          for (var cryptoPair
+              in query.isEmpty ? cryptoList : cryptoListFiltered)
             CryptoListItem(cryptoPair: cryptoPair),
         ],
       ),

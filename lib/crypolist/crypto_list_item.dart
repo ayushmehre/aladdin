@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:investing_tool/api.dart';
 import 'package:investing_tool/crypolist/model.dart';
 
+import '../time_series_model.dart';
+import '../util.dart';
 import 'firebase_crypto_object.dart';
 import 'last30DaysPerformance.dart';
 
@@ -18,11 +20,23 @@ class CryptoListItem extends StatefulWidget {
 class _CryptoListItemState extends State<CryptoListItem> {
   bool isRefreshing = false;
   FirebaseCryptoObject? cryptoObject;
+  List<PerformanceObject>? dailyArray;
+  List<PerformanceObject>? weeklyArray;
+  List<PerformanceObject>? monthlyArray;
 
   @override
   void initState() {
     super.initState();
     fetchCoinDetails();
+    fetchHistoricalData();
+  }
+
+  void fetchHistoricalData() async {
+    var data = await FirebaseUtil()
+        .fetchHistoricalData(widget.cryptoPair.id.toString(), freq: '1week', limit: 30);
+    setState(() {
+      dailyArray = data;
+    });
   }
 
   void fetchCoinDetails() async {
@@ -58,6 +72,45 @@ class _CryptoListItemState extends State<CryptoListItem> {
     });
   }
 
+  void refreshPerformanceData() async {
+    print('Fetching daily performance data from API...');
+    StockData? data = await API().fetchTimeSeriesFor(
+        symbol: widget.cryptoPair.symbol ?? "",
+        interval: '1day',
+        outputSize: 365);
+    if (data != null) {
+      print('Updating daily performance data on Firebase...');
+      List<PerformanceObject> array = Utils().getPercentageChanges(data);
+      FirebaseUtil().updateDailyPerformance(widget.cryptoPair, array);
+    }
+  }
+
+  void refreshWeeklyPerformanceData() async {
+    print('Fetching weekly performance data from API...');
+    StockData? data = await API().fetchTimeSeriesFor(
+        symbol: widget.cryptoPair.symbol ?? "",
+        interval: '1week',
+        outputSize: 520);
+    if (data != null) {
+      print('Updating weekly performance data on Firebase...');
+      List<PerformanceObject> array = Utils().getPercentageChanges(data);
+      FirebaseUtil().updateWeeklyPerformance(widget.cryptoPair, array);
+    }
+  }
+
+  void refreshMonthlyPerformanceData() async {
+    print('Fetching monthly performance data from API...');
+    StockData? data = await API().fetchTimeSeriesFor(
+        symbol: widget.cryptoPair.symbol ?? "",
+        interval: '1month',
+        outputSize: 120);
+    if (data != null) {
+      print('Updating monthly performance data on Firebase...');
+      List<PerformanceObject> array = Utils().getPercentageChanges(data);
+      FirebaseUtil().updateMonthlyPerformance(widget.cryptoPair, array);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (cryptoObject?.logo != '') {
@@ -81,6 +134,9 @@ class _CryptoListItemState extends State<CryptoListItem> {
                     onPressed: () {
                       refreshLogo();
                       // refreshMarketData();
+                      refreshPerformanceData();
+                      refreshWeeklyPerformanceData();
+                      refreshMonthlyPerformanceData();
                     },
                     icon: isRefreshing
                         ? const SizedBox(
@@ -92,9 +148,8 @@ class _CryptoListItemState extends State<CryptoListItem> {
             ),
           ],
         ),
-        subtitle: Text(widget.cryptoPair.currencyBase ?? ""),
-        trailing: Last30DaysPerformance(
-          symbol: widget.cryptoPair.symbol ?? "",
-        ));
+        subtitle: Text(widget.cryptoPair.currencyBase ?? ""),);
+        // trailing: Text(dailyArray==null?"Loading...":"${dailyArray?.length.toString()}"),
+        // trailing: dailyArray==null?const Text('Loading...'):Last30DaysPerformance(array: dailyArray ?? []));
   }
 }

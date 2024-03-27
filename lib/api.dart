@@ -9,7 +9,7 @@ class API {
 
   Future<StockData?> fetchTimeSeriesFor(
       {String symbol = 'BTC/INR',
-      int outputSize = 30,
+      int outputSize = 90,
       String interval = '1day'}) async {
     print('Fetching time series data for $symbol...');
     var uri =
@@ -59,7 +59,6 @@ class API {
   }
 
   Future<dynamic> fetchSummary(String symbol) async {
-    //https://api.twelvedata.com/statistics?symbol=AAPL&apikey=your_api_key
     var uri =
         'https://api.twelvedata.com/statistics?symbol=$symbol&apikey=$apiKey';
     final response = await http.get(Uri.parse(uri));

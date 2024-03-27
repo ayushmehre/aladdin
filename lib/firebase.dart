@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:investing_tool/crypolist/model.dart';
+import 'package:investing_tool/util.dart';
 
 import 'api.dart';
 import 'crypolist/firebase_crypto_object.dart';
@@ -33,7 +34,7 @@ class FirebaseUtil {
     // Await the Firestore querySnapshot
     QuerySnapshot querySnapshot = await _firestore
         .collection('cryptoList')
-        .where('logo', isNull: false)
+        .where('availableExchanges', arrayContains: 'Binance')
         .get();
 
     // Iterate over documents
@@ -69,5 +70,79 @@ class FirebaseUtil {
     _firestore.collection('cryptoList').doc(symbol).update({
       'summary': summary,
     });
+  }
+
+  void updateDailyPerformance(
+      CryptoPair cryptoPair, List<PerformanceObject> array) {
+    print('Updating daily performance for ${cryptoPair.symbol}');
+    for (var element in array) {
+      var string = cryptoPair.id.toString();
+      _firestore
+          .collection('cryptoList')
+          .doc(string)
+          .collection('1day')
+          .doc(
+              '${element.dateTime.year}-${element.dateTime.month}-${element.dateTime.day}')
+          .set({
+        'change': element.percentageChange,
+        'date': element.dateTime.toIso8601String()
+      });
+    }
+  }
+
+  void updateWeeklyPerformance(
+      CryptoPair cryptoPair, List<PerformanceObject> array) {
+    print('Updating weekly performance for ${cryptoPair.symbol}');
+    for (var element in array) {
+      var string = cryptoPair.id.toString();
+      _firestore
+          .collection('cryptoList')
+          .doc(string)
+          .collection('1week')
+          .doc(
+              '${element.dateTime.year}-${element.dateTime.month}-${element.dateTime.day}')
+          .set({
+        'change': element.percentageChange,
+        'date': element.dateTime.toIso8601String()
+      });
+    }
+  }
+
+  void updateMonthlyPerformance(
+      CryptoPair cryptoPair, List<PerformanceObject> array) {
+    print('Updating monthly performance for ${cryptoPair.symbol}');
+    for (var element in array) {
+      var string = cryptoPair.id.toString();
+      _firestore
+          .collection('cryptoList')
+          .doc(string)
+          .collection('1month')
+          .doc(
+              '${element.dateTime.year}-${element.dateTime.month}-${element.dateTime.day}')
+          .set({
+        'change': element.percentageChange,
+        'date': element.dateTime.toIso8601String()
+      });
+    }
+  }
+
+  Future<List<PerformanceObject>> fetchHistoricalData(String id,
+      {required String freq, required int limit}) async {
+    List<PerformanceObject> array = [];
+    var data = await _firestore
+        .collection('cryptoList')
+        .doc(id)
+        .collection(freq)
+        .orderBy('date', descending: true)
+        .limit(limit)
+        .get();
+    for (DocumentSnapshot snapshot in data.docs) {
+      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+      array.add(PerformanceObject(
+          percentageChange: data['change'],
+          dateTime: DateTime.parse(data['date'])));
+      // print('data: $data');
+    }
+    return array;
   }
 }
