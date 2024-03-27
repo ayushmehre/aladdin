@@ -20,7 +20,7 @@ class _HistoricalDataScreenState extends State<HistoricalDataScreen> {
   @override
   void initState() {
     super.initState();
-    fetch();
+    // fetch();
   }
 
   void fetch() async {
@@ -77,13 +77,13 @@ class _HistoricalDataScreenState extends State<HistoricalDataScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  percentageChange.toStringAsFixed(2) + '%',
+                  '${percentageChange.toStringAsFixed(2)}%',
                   style: const TextStyle(
                     color: Colors.black87,
                     fontSize: 12.0,
                   ),
                 ),
-                SizedBox(height: 8.0),
+                const SizedBox(height: 8.0),
                 Text(
                   value.getUserFriendlyDate(),
                   style: const TextStyle(

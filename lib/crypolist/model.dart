@@ -1,4 +1,5 @@
 class CryptoPair {
+  late String? id;
   String? symbol;
   List<String>? availableExchanges;
   String? currencyBase;
@@ -9,7 +10,9 @@ class CryptoPair {
     this.availableExchanges,
     this.currencyBase,
     this.currencyQuote,
-  });
+  }) {
+    id = symbol?.replaceAll('/', '_');
+  }
 
   CryptoPair.fromJson(Map<String, dynamic> json) {
     symbol = json['symbol'];
@@ -18,6 +21,7 @@ class CryptoPair {
     }
     currencyBase = json['currency_base'];
     currencyQuote = json['currency_quote'];
+    id = symbol?.replaceAll('/', '_');
   }
 
   Map<String, dynamic> toJson() {

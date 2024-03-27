@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../firebase.dart';
+
 class OverView extends StatefulWidget {
   const OverView({super.key});
 
@@ -16,9 +18,14 @@ class _OverViewState extends State<OverView> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
-        children: const [
-          Text('Markets Overview',
+        children: [
+          const Text('Markets Overview',
               style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
+          ElevatedButton(
+              onPressed: () {
+                FirebaseUtil().refreshCryptoList();
+              },
+              child: const Text('Fetch Crypto List')),
         ],
       ),
     );

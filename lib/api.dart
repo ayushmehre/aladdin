@@ -27,7 +27,7 @@ class API {
   Future<List<CryptoPair>> fetchCryptoList() async {
     print('Fetching crypto list...');
     var uri =
-        'https://api.twelvedata.com/cryptocurrencies?source=docs&apikey=$apiKey&symbol=BTC/USD';
+        'https://api.twelvedata.com/cryptocurrencies?source=docs&apikey=$apiKey';
     final response = await http.get(Uri.parse(uri));
     if (response.statusCode == 200) {
       final decodedData = json.decode(response.body);
@@ -42,6 +42,33 @@ class API {
     } else {
       print('Failed to load crypto list');
       return [];
+    }
+  }
+
+  Future<String> fetchLogo(String symbol) async {
+    print('Fetching Logo for $symbol...');
+    var uri = 'https://api.twelvedata.com/logo?symbol=$symbol&apikey=$apiKey';
+    final response = await http.get(Uri.parse(uri));
+    if (response.statusCode == 200) {
+      final decodedData = json.decode(response.body);
+      return decodedData['logo_base'];
+    } else {
+      print('Failed to load logo for $symbol');
+      return '';
+    }
+  }
+
+  Future<dynamic> fetchSummary(String symbol) async {
+    //https://api.twelvedata.com/statistics?symbol=AAPL&apikey=your_api_key
+    var uri =
+        'https://api.twelvedata.com/statistics?symbol=$symbol&apikey=$apiKey';
+    final response = await http.get(Uri.parse(uri));
+    if (response.statusCode == 200) {
+      final decodedData = json.decode(response.body);
+      return decodedData;
+    } else {
+      print('Failed to load summary');
+      return '';
     }
   }
 }
